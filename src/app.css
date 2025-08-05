@@ -1,0 +1,18 @@
+@font-face {
+  font-family: 'SuperFuntime';
+  src: url('/super-funtime.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'QuickHand';
+  src: url('/quick-hand.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}

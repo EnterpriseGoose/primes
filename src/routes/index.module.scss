@@ -1,0 +1,251 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'SuperFuntime', sans-serif;
+}
+
+.cardSection {
+  margin-bottom: 2rem;
+}
+
+.cardContainer {
+  position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.cardImage {
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.cornerNumber {
+  position: absolute;
+  font-family: 'QuickHand', cursive;
+  font-size: 6rem;
+  font-weight: bold;
+  color: #231F20;
+  z-index: 10;
+	width: 6rem;
+	text-align: center;
+	white-space: pre;
+}
+
+.topLeft {
+  top: 0px;
+  left: 0px;
+}
+
+.topRight {
+  top: 0px;
+  right: 0px;
+}
+
+.bottomLeft {
+  bottom: 0px;
+  left: 0px;
+}
+
+.bottomRight {
+  bottom: 0px;
+  right: 0px;
+}
+
+.centerNumber {
+  position: absolute;
+  font-family: 'QuickHand', cursive;
+  font-size: 6rem;
+  color: #AB1E23;
+	font-weight: 400;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 300px;
+}
+
+.numberSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.label {
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.numberInputGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.numberInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: 'SuperFuntime', sans-serif;
+  background: rgba(255, 255, 255, 0.9);
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.5);
+  }
+}
+
+.randomizeButton {
+  background: linear-gradient(45deg, #4ecdc4, #44a08d);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'SuperFuntime', sans-serif;
+  white-space: nowrap;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.4);
+  }
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.loadButton {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'SuperFuntime', sans-serif;
+  width: 100%;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.loadingSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.getPuzzleButton {
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'SuperFuntime', sans-serif;
+  width: 100%;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+  }
+}
+
+.difficultySection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.difficultyLabel {
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.difficultySlider {
+  width: 200px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  outline: none;
+  cursor: pointer;
+  
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  }
+} 
