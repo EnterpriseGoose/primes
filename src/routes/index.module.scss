@@ -202,10 +202,100 @@
   font-family: 'SuperFuntime', sans-serif;
   width: 100%;
   
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
   }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.solutionSection {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.hintButton {
+  background: linear-gradient(45deg, #4ecdc4, #44a08d);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'SuperFuntime', sans-serif;
+  flex: 1;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.solutionButton {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'SuperFuntime', sans-serif;
+  flex: 1;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.solutionDisplay {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  
+  h3 {
+    color: white;
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+}
+
+.solutionText {
+  color: white;
+  font-size: 1.1rem;
+  font-family: 'QuickHand', cursive;
+  line-height: 1.5;
+  
+  span {
+    margin: 0 0.2rem;
+  }
+}
+
+.hiddenNumber {
+  color: #ff6b6b !important;
+  font-weight: bold;
 }
 
 .difficultySection {

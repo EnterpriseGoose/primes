@@ -4,9 +4,8 @@ import styles from './index.module.scss';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { Worker } from 'worker_threads';
+import os from 'os';
 
 const PRIMES = [
   2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
@@ -51,7 +50,8 @@ let savedPuzzles: {
 const readSavedPuzzles = () => {
   'use server';
   try {
-    const filePath = path.join(__dirname, 'public', 'saved-puzzles.json');
+    const filePath = path.join(process.cwd(), 'saved-puzzles.json');
+    console.log('Reading from:', filePath);
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath, 'utf8');
       return JSON.parse(data);
@@ -65,14 +65,15 @@ const readSavedPuzzles = () => {
 const writeSavedPuzzles = (puzzles: any) => {
   'use server';
   try {
-    const filePath = path.join(__dirname, 'public', 'saved-puzzles.json');
+    const filePath = path.join(process.cwd(), 'saved-puzzles.json');
+    console.log('Writing to:', filePath);
     fs.writeFileSync(filePath, JSON.stringify(puzzles, null, 2));
   } catch (error) {
     console.error('Error writing saved puzzles:', error);
   }
 };
 
-const regenerateNumbers = (prime: number) => {
+const regenerateNumbers = async (prime: number) => {
   'use server';
 
   savedPuzzles = readSavedPuzzles();
@@ -81,120 +82,167 @@ const regenerateNumbers = (prime: number) => {
     return savedPuzzles[prime];
   }
 
-  let puzzles: { [index: string]: string[][] } = {};
+  const numCPUs = os.cpus().length;
+  const maxWorkers = Math.min(numCPUs, 16);
 
+  // Split the work into chunks
+  const chunks = [];
   for (let i = 1; i < 10; i++) {
-    console.log(`processing digits: ${i.toString()}`);
     for (let j = 1; j <= i; j++) {
-      console.log(`processing sub-digit: ${j.toString()}`);
       for (let k = 1; k <= i; k++) {
         for (let l = 1; l <= i; l++) {
-          const digits = [i, j, k, l];
-
-          // Operations:
-          // 0 = +, 1 = -, 2 = *, 3 = /
-          for (let o1 = 0; o1 < 4; o1++) {
-            for (let o2 = 0; o2 < 4; o2++) {
-              for (let o3 = 0; o3 < 4; o3++) {
-                // Digit orders - See DIGIT_ORDERS
-                for (let d = 0; d < DIGIT_ORDERS.length; d++) {
-                  // Parthentases
-                  // 0 =  x  x  x  x
-                  // 1 =  x (x  x) x
-                  // 2 =  x  x (x  x)
-                  // 3 =  x (x  x  x)
-                  // 4 = (x  x)(x  x)
-
-                  let foundOne = false;
-                  for (let p = 0; p < 5 && !foundOne; p++) {
-                    const ordered_digits = [
-                      digits[DIGIT_ORDERS[d][0]],
-                      digits[DIGIT_ORDERS[d][1]],
-                      digits[DIGIT_ORDERS[d][2]],
-                      digits[DIGIT_ORDERS[d][3]],
-                    ];
-                    const ordered_operations = [
-                      OPERATIONS[o1],
-                      OPERATIONS[o2],
-                      OPERATIONS[o3],
-                    ];
-                    let result = 0;
-                    if (p == 0) {
-                      result = eval(
-                        `${ordered_digits[0]}${ordered_operations[0]}${ordered_digits[1]}${ordered_operations[1]}${ordered_digits[2]}${ordered_operations[2]}${ordered_digits[3]}`
-                      );
-                    }
-                    if (p == 1) {
-                      result = eval(
-                        `${ordered_digits[0]}${ordered_operations[0]}${ordered_digits[1]}${ordered_operations[1]}${ordered_digits[2]}${ordered_operations[2]}${ordered_digits[3]}`
-                      );
-                    }
-                    if (p == 2) {
-                      result = eval(
-                        `${ordered_digits[0]}${ordered_operations[0]}${ordered_digits[1]}${ordered_operations[1]}${ordered_digits[2]}${ordered_operations[2]}${ordered_digits[3]}`
-                      );
-                    }
-                    if (p == 3) {
-                      result = eval(
-                        `${ordered_digits[0]}${ordered_operations[0]}${ordered_digits[1]}${ordered_operations[1]}${ordered_digits[2]}${ordered_operations[2]}${ordered_digits[3]}`
-                      );
-                    }
-                    if (p == 4) {
-                      result = eval(
-                        `${ordered_digits[0]}${ordered_operations[0]}${ordered_digits[1]}${ordered_operations[1]}${ordered_digits[2]}${ordered_operations[2]}${ordered_digits[3]}`
-                      );
-                    }
-
-                    if (result == prime) {
-                      let resArray = [];
-                      if (p == 4) {
-                        resArray.push('(');
-                      }
-                      resArray.push(
-                        ordered_digits[0].toString(),
-                        ordered_operations[0]
-                      );
-                      if (p == 1 || p == 3) {
-                        resArray.push('(');
-                      }
-                      resArray.push(ordered_digits[1].toString());
-                      if (p == 4) {
-                        resArray.push(')');
-                      }
-                      resArray.push(ordered_operations[1]);
-                      if (p == 2 || p == 4) {
-                        resArray.push('(');
-                      }
-                      resArray.push(ordered_digits[2].toString());
-                      if (p == 1) {
-                        resArray.push(')');
-                      }
-                      resArray.push(
-                        ordered_operations[2],
-                        ordered_digits[3].toString()
-                      );
-                      if (p == 2 || p == 3 || p == 4) {
-                        resArray.push(')');
-                      }
-                      if (!puzzles[`${i} ${j} ${k} ${l}`])
-                        puzzles[`${i} ${j} ${k} ${l}`] = [];
-                      puzzles[`${i} ${j} ${k} ${l}`].push(resArray);
-                      foundOne = true;
-                    }
-                  }
-                }
-              }
-            }
-          }
+          chunks.push({ i, j, k, l });
         }
       }
     }
   }
 
+  console.log('chunks', chunks.length);
+
+  const chunkSize = Math.ceil(chunks.length / maxWorkers);
+  const workerPromises = [];
+
+  for (let w = 0; w < maxWorkers; w++) {
+    const start = w * chunkSize;
+    const end = Math.min(start + chunkSize, chunks.length);
+    const workerChunks = chunks.slice(start, end);
+
+    const workerPromise = new Promise((resolve, reject) => {
+      const worker = new Worker(
+        `
+        const { parentPort } = require('worker_threads');
+        
+        const DIGIT_ORDERS = [
+          [0, 1, 2, 3], [0, 1, 3, 2], [0, 2, 1, 3], [0, 2, 3, 1],
+          [0, 3, 1, 2], [0, 3, 2, 1], [1, 0, 2, 3], [1, 0, 3, 2],
+          [1, 2, 0, 3], [1, 2, 3, 0], [1, 3, 0, 2], [1, 3, 2, 0],
+          [2, 0, 1, 3], [2, 0, 3, 1], [2, 1, 0, 3], [2, 1, 3, 0],
+          [2, 3, 0, 1], [2, 3, 1, 0], [3, 0, 1, 2], [3, 0, 2, 1],
+          [3, 1, 0, 2], [3, 1, 2, 0], [3, 2, 0, 1], [3, 2, 1, 0]
+        ];
+        
+        const OPERATIONS = ['+', '-', '*', '/'];
+        
+                 function calculateResult(digits, operations, parentheses) {
+           const [a, b, c, d] = digits;
+           const [op1, op2, op3] = operations;
+           
+           let expression = '';
+           switch (parentheses) {
+             case 0: expression = a + op1 + b + op2 + c + op3 + d; break;
+             case 1: expression = a + op1 + '(' + b + op2 + c + ')' + op3 + d; break;
+             case 2: expression = a + op1 + b + op2 + '(' + c + op3 + d + ')'; break;
+             case 3: expression = a + op1 + '(' + b + op2 + c + op3 + d + ')'; break;
+             case 4: expression = '(' + a + op1 + b + ')' + op2 + '(' + c + op3 + d + ')'; break;
+             default: return 0;
+           }
+           
+           return eval(expression);
+         }
+        
+                 parentPort.on('message', (data) => {
+           const { chunks, prime } = data;
+           const puzzles = {};
+           
+           console.log('Worker processing', chunks.length, 'chunks for prime', prime);
+           
+           chunks.forEach(({ i, j, k, l }) => {
+             const digits = [i, j, k, l];
+            
+            for (let o1 = 0; o1 < 4; o1++) {
+              for (let o2 = 0; o2 < 4; o2++) {
+                for (let o3 = 0; o3 < 4; o3++) {
+                  for (let d = 0; d < DIGIT_ORDERS.length; d++) {
+                    let foundOne = false;
+                    for (let p = 0; p < 5 && !foundOne; p++) {
+                      const ordered_digits = [
+                        digits[DIGIT_ORDERS[d][0]],
+                        digits[DIGIT_ORDERS[d][1]],
+                        digits[DIGIT_ORDERS[d][2]],
+                        digits[DIGIT_ORDERS[d][3]]
+                      ];
+                      const ordered_operations = [
+                        OPERATIONS[o1],
+                        OPERATIONS[o2],
+                        OPERATIONS[o3]
+                      ];
+                      
+                      const result = calculateResult(ordered_digits, ordered_operations, p);
+                      
+                      if (result == prime) {
+                        let resArray = [];
+                        if (p == 4) resArray.push('(');
+                        resArray.push(ordered_digits[0].toString(), ordered_operations[0]);
+                        if (p == 1 || p == 3) resArray.push('(');
+                        resArray.push(ordered_digits[1].toString());
+                        if (p == 4) resArray.push(')');
+                        resArray.push(ordered_operations[1]);
+                        if (p == 2 || p == 4) resArray.push('(');
+                        resArray.push(ordered_digits[2].toString());
+                        if (p == 1) resArray.push(')');
+                        resArray.push(ordered_operations[2], ordered_digits[3].toString());
+                        if (p == 2 || p == 3 || p == 4) resArray.push(')');
+                        
+                        const key = i + ' ' + j + ' ' + k + ' ' + l;
+                        if (!puzzles[key]) puzzles[key] = [];
+                        puzzles[key].push(resArray);
+                        foundOne = true;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+                     });
+           
+           console.log('Worker found', Object.keys(puzzles).length, 'puzzles');
+           parentPort.postMessage(puzzles);
+        });
+      `,
+        { eval: true }
+      );
+
+      worker.postMessage({ chunks: workerChunks, prime });
+
+      worker.on('message', (result: any) => {
+        resolve(result);
+      });
+
+      worker.on('error', (error) => {
+        console.error('Worker error:', error);
+        reject(error);
+      });
+
+      worker.on('exit', (code: number) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
+
+      console.log('new worker!!');
+    });
+
+    workerPromises.push(workerPromise);
+  }
+
+  // Wait for all workers to complete
+  const results = await Promise.all(workerPromises);
+
+  // Merge results from all workers
+  let puzzles: { [index: string]: string[][] } = {};
+  results.forEach((workerResult) => {
+    Object.assign(puzzles, workerResult);
+  });
+
+  // Sort puzzles by number of solutions (descending)
+  puzzles = Object.fromEntries(
+    Object.entries(puzzles).sort((a, b) => b[1].length - a[1].length)
+  );
+
   savedPuzzles[prime] = puzzles;
   writeSavedPuzzles(savedPuzzles);
 
-  console.log(puzzles);
+  // console.log(puzzles);
 
   return puzzles as { [index: string]: string[][] };
 };
@@ -207,6 +255,9 @@ export default function Home() {
   const [error, setError] = createSignal('');
   const [difficulty, setDifficulty] = createSignal(5);
   const [isLoading, setIsLoading] = createSignal(false);
+  const [currentSolution, setCurrentSolution] = createSignal<string[]>([]);
+  const [showHint, setShowHint] = createSignal(false);
+  const [showSolution, setShowSolution] = createSignal(false);
 
   const randomizePrime = () => {
     const randomPrime = PRIMES[Math.floor(Math.random() * PRIMES.length)];
@@ -264,7 +315,28 @@ export default function Home() {
       puzzleKeys[Math.min(weightedIndex, puzzleKeys.length - 1)];
     const selectedNumbers = selectedKey.split(' ').map(Number);
     setNumbers(selectedNumbers);
+
+    // Get a random solution for this puzzle
+    const solutions = (puzzles as any)[selectedKey];
+    if (solutions && solutions.length > 0) {
+      const randomSolution =
+        solutions[Math.floor(Math.random() * solutions.length)];
+      setCurrentSolution(randomSolution);
+    }
+
+    setShowHint(false);
+    setShowSolution(false);
     setError('');
+  };
+
+  const getHint = () => {
+    setShowHint(true);
+    setShowSolution(false);
+  };
+
+  const getSolution = () => {
+    setShowSolution(true);
+    setShowHint(false);
   };
 
   return (
@@ -361,6 +433,37 @@ export default function Home() {
         <button onClick={getPuzzle} class={styles.getPuzzleButton}>
           Get Puzzle
         </button>
+
+        <div class={styles.solutionSection}>
+          <button
+            onClick={getHint}
+            class={styles.hintButton}
+            disabled={currentSolution().length === 0}
+          >
+            Get Hint
+          </button>
+          <button
+            onClick={getSolution}
+            class={styles.solutionButton}
+            disabled={currentSolution().length === 0}
+          >
+            Get Solution
+          </button>
+        </div>
+
+        {(showHint() || showSolution()) && currentSolution().length > 0 && (
+          <div class={styles.solutionDisplay}>
+            <h3>{showHint() ? 'Hint:' : 'Solution:'}</h3>
+            <div class={styles.solutionText}>
+              {currentSolution().map((item, index) => {
+                if (showHint() && /^\d+$/.test(item)) {
+                  return <span class={styles.hiddenNumber}>x</span>;
+                }
+                return <span>{item}</span>;
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
