@@ -147,6 +147,7 @@ const regenerateNumbers = async (prime: number) => {
            console.log('Worker processing', chunks.length, 'chunks for prime', prime);
            
            chunks.forEach(({ i, j, k, l }) => {
+					 	console.log('processing chunk', i, j, k, l);
              const digits = [i, j, k, l];
             
             for (let o1 = 0; o1 < 4; o1++) {
